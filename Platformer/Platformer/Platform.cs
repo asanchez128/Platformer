@@ -16,13 +16,14 @@ namespace Platformer
 
         private Texture2D texture;
 
-        public Platform(World world, Texture2D texture, Vector2 position)
+        public Platform(World world, Texture2D texture, Microsoft.Xna.Framework.Vector2 position)
         {
             this.texture = texture;
 
             Body = BodyFactory.CreateRectangle(world,
                 ConvertUnits.ToSimUnits(texture.Width),
                 ConvertUnits.ToSimUnits(texture.Height), 1f, position);
+            Body.BodyType = BodyType.Static;
         }
 
 

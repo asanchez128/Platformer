@@ -23,6 +23,8 @@ namespace Platformer
             Body = BodyFactory.CreateRectangle(world, 
                 ConvertUnits.ToSimUnits(texture.Width),
                 ConvertUnits.ToSimUnits(texture.Height), 1f, position);
+           Body.BodyType = BodyType.Static;
+
         }
 
         public void Draw(SpriteBatch spriteBatch)

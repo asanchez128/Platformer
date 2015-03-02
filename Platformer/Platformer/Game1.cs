@@ -20,7 +20,8 @@ namespace Platformer
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         const int LEVEL_WIDTH = 89;
-        const int LEVEL_HEIGHT = 53;
+        const int LEVEL_HEIGHT = 47;
+        protected const float DEFAULT_X_SPEED = 0.01f;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -30,7 +31,12 @@ namespace Platformer
         private List<Platform> platforms = new List<Platform>();
         private World world;
         private string levelData;
+        private Character character;
+        private KeyboardState newKeyboardState;
+        private KeyboardState oldKeyboardState;
 
+       private Vector2 textureMeasures;
+        public float Speed { get; set; }
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -48,7 +54,7 @@ namespace Platformer
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
+            Speed =  DEFAULT_X_SPEED;
             base.Initialize();
         }
 
@@ -71,7 +77,13 @@ namespace Platformer
             Texture2D groundTexture = Content.Load<Texture2D>("Images\\ground");
             Texture2D platformTexture = Content.Load <Texture2D>("Images\\platform");
 
-            //Read in the text file
+           // Character
+           Texture2D texture = Content.Load<Texture2D>("Images\\anakinTransparency");
+           textureMeasures = new Vector2(texture.Width, texture.Height);
+           Vector2 location = new Vector2(1f, 3f);
+           character = new Character(world, texture, location);
+           
+           //Read in the text file
             var stream = TitleContainer.OpenStream("Levels/level1.txt");
             var reader = new StreamReader(stream);
 
@@ -119,8 +131,34 @@ namespace Platformer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // TODO: Add your update logic here
+            oldKeyboardState = newKeyboardState;
+            newKeyboardState = Keyboard.GetState();
+            float y = 0.0f, x = 0.0f;
+            
+            if (newKeyboardState.IsKeyDown(Keys.Down) && 
+               character.Body.Position.Y + Speed <= ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Height))
+            {
+               y = Speed;
+            }
+            else if (newKeyboardState.IsKeyDown(Keys.Up) &&
+               character.Body.Position.Y - Speed >= 0)
+            {
+               
+               y = -Speed;
+            }
+            else if (newKeyboardState.IsKeyDown(Keys.Left) &&
+               character.Body.Position.X - Speed >= 0)
+            {
+               x = -Speed;
+            }
+            else if (newKeyboardState.IsKeyDown(Keys.Right) &&
+               character.Body.Position.X + Speed <= ConvertUnits.ToSimUnits(GraphicsDevice.Viewport.Width))
+            {
+               x = Speed;
+            }
 
+            character.Move(new Vector2(x, y));
+            world.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f);
             base.Update(gameTime);
         }
 
@@ -145,6 +183,7 @@ namespace Platformer
                 g.Draw(spriteBatch);
             }
 
+            character.Draw(spriteBatch);
             spriteBatch.End();
 
             base.Draw(gameTime);
